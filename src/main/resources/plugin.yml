@@ -1,0 +1,9 @@
+name: HeroicScoreboard
+main: com.dbsoftwares.spigot.scoreboard.HeroicScoreboard
+version: ${project.version}
+api-version: '1.15'
+author: didjee2
+softdepend:
+  - MVdWPlaceholderAPI
+  - PlaceholderAPI
+  - CentrixCore
