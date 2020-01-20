@@ -29,7 +29,8 @@ public class Scoreboard
         if ( config.getBoolean( "async.enabled" ) && config.getBoolean( "async.thread-pool.enabled" ) )
         {
             THREAD_POOL = Executors.newFixedThreadPool( config.getInteger( "async.thread-pool.size" ) );
-        } else
+        }
+        else
         {
             THREAD_POOL = null;
         }
@@ -101,7 +102,8 @@ public class Scoreboard
                     if ( HeroicScoreboard.getInstance().getConfiguration().getBoolean( "async.enabled" ) )
                     {
                         executorService.execute( this::update );
-                    } else
+                    }
+                    else
                     {
                         Bukkit.getScheduler().runTask( HeroicScoreboard.getInstance(), this::update );
                     }
@@ -134,7 +136,8 @@ public class Scoreboard
             );
 
             this.objective.sendPacket( player );
-        } else
+        }
+        else
         {
             configuration.getTitle().reduceStayTime();
         }
@@ -146,7 +149,8 @@ public class Scoreboard
             if ( line.canRun() )
             {
                 this.setLine( i, line.next( this.player ) );
-            } else
+            }
+            else
             {
                 line.reduceStayTime();
             }
@@ -191,7 +195,7 @@ public class Scoreboard
         {
             return;
         }
-        final int score = ( 15 - line );
+        final int score = (15 - line);
         final VirtualTeam val = getOrCreateTeam( line );
 
         for ( WrapperPlayServerScoreboardTeam packet : val.sendLine() )
