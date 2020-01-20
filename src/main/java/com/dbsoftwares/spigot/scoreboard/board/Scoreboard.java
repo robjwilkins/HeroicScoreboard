@@ -1,7 +1,5 @@
 package com.dbsoftwares.spigot.scoreboard.board;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
 import com.dbsoftwares.configuration.api.IConfiguration;
 import com.dbsoftwares.spigot.scoreboard.HeroicScoreboard;
 import com.dbsoftwares.spigot.scoreboard.config.ScoreboardConfiguration;
@@ -31,14 +29,12 @@ public class Scoreboard
         if ( config.getBoolean( "async.enabled" ) && config.getBoolean( "async.thread-pool.enabled" ) )
         {
             THREAD_POOL = Executors.newFixedThreadPool( config.getInteger( "async.thread-pool.size" ) );
-        }
-        else
+        } else
         {
             THREAD_POOL = null;
         }
     }
 
-    private final ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
     private final ScoreboardConfiguration configuration;
     private final Player player;
     private final String scoreboardName;
@@ -53,7 +49,12 @@ public class Scoreboard
     {
         this.player = player;
         this.configuration = scoreboardConfig.copy();
-        this.scoreboardName = "HSB#" + player.getName();
+        String scoreboardName = "HSB#" + player.getName();
+        if ( scoreboardName.length() > 16 )
+        {
+            scoreboardName = scoreboardName.substring( 0, 16 );
+        }
+        this.scoreboardName = scoreboardName;
         this.executorService = THREAD_POOL == null ? Executors.newSingleThreadExecutor() : THREAD_POOL;
     }
 
@@ -64,10 +65,6 @@ public class Scoreboard
 
     private String getNextTitle()
     {
-        //        if ( ServerVersion.search().isNewerThan( ServerVersion.MINECRAFT_1_13 ) )
-//        {
-//            return ComponentSerializer.toString( TextComponent.fromLegacyText( title ) );
-//        }
         return configuration.getTitle().next( player );
     }
 
@@ -77,7 +74,6 @@ public class Scoreboard
         {
             return;
         }
-        final long millis = System.currentTimeMillis();
         this.objective = PacketUtils.createScoreboardObjectivePacket(
                 this.scoreboardName,
                 getNextTitle(),
@@ -105,8 +101,7 @@ public class Scoreboard
                     if ( HeroicScoreboard.getInstance().getConfiguration().getBoolean( "async.enabled" ) )
                     {
                         executorService.execute( this::update );
-                    }
-                    else
+                    } else
                     {
                         Bukkit.getScheduler().runTask( HeroicScoreboard.getInstance(), this::update );
                     }
@@ -139,8 +134,7 @@ public class Scoreboard
             );
 
             this.objective.sendPacket( player );
-        }
-        else
+        } else
         {
             configuration.getTitle().reduceStayTime();
         }
@@ -152,8 +146,7 @@ public class Scoreboard
             if ( line.canRun() )
             {
                 this.setLine( i, line.next( this.player ) );
-            }
-            else
+            } else
             {
                 line.reduceStayTime();
             }
@@ -168,7 +161,8 @@ public class Scoreboard
         }
         task.cancel( true );
 
-        if (THREAD_POOL == null) {
+        if ( THREAD_POOL == null )
+        {
             executorService.shutdown();
         }
 
@@ -197,7 +191,7 @@ public class Scoreboard
         {
             return;
         }
-        final int score = (15 - line);
+        final int score = ( 15 - line );
         final VirtualTeam val = getOrCreateTeam( line );
 
         for ( WrapperPlayServerScoreboardTeam packet : val.sendLine() )

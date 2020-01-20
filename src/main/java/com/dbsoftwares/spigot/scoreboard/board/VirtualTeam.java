@@ -6,6 +6,7 @@ import com.dbsoftwares.spigot.scoreboard.utils.ScoreboardUtils;
 import com.dbsoftwares.spigot.scoreboard.utils.ServerVersion;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class VirtualTeam

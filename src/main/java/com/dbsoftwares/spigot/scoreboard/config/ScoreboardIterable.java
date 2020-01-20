@@ -42,8 +42,7 @@ public class ScoreboardIterable
             idx = 0;
         }
         stayTime = interval;
-        idx++;
 
-        return Utils.format( player, lines.get( idx - 1 ) );
+        return Utils.format( player, lines.get( idx++ ) );
     }
 }
