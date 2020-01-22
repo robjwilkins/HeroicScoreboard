@@ -4,15 +4,11 @@ import com.dbsoftwares.spigot.scoreboard.config.ScoreboardIterable;
 import com.dbsoftwares.spigot.scoreboard.utils.ServerVersion;
 import com.dbsoftwares.spigot.scoreboard.utils.StringReference;
 import com.dbsoftwares.spigot.scoreboard.utils.Utils;
-import lombok.Data;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ScrollerPlaceHolder extends PlaceHolder
 {
@@ -51,9 +47,9 @@ public class ScrollerPlaceHolder extends PlaceHolder
                 iterable.setData( "SCROLLER_" + text, new ScrollingString( text, maxWidth, spaces ) );
             }
             final ScrollingString scroller = iterable.getData( "SCROLLER_" + text );
-            scroller.scrollForward();
 
             message = message.replace( element.outerHtml(), scroller.getScrolled() );
+            scroller.scrollForward();
         }
 
         reference.setText( message );
@@ -92,6 +88,8 @@ public class ScrollerPlaceHolder extends PlaceHolder
         private String original;
         private int width;
         private int position;
+        private String lastColors = "";
+        private int lastColorPos = 0;
 
         public ScrollingString( final String original, final int width, final int spaces )
         {
@@ -128,6 +126,7 @@ public class ScrollerPlaceHolder extends PlaceHolder
         public void reset()
         {
             position = 0;
+            lastColorPos = 0;
         }
 
         public void append( String s )
@@ -150,26 +149,74 @@ public class ScrollerPlaceHolder extends PlaceHolder
             reset();
         }
 
+        private String checkForChatColor( final String str, final int pos )
+        {
+            final StringBuilder result = new StringBuilder();
+
+            if ( pos >= str.length() )
+            {
+                return result.toString();
+            }
+
+            if ( str.charAt( pos ) == ChatColor.COLOR_CHAR )
+            {
+                if ( pos + 1 >= str.length() )
+                {
+                    return result.toString();
+                }
+                final char colorChar = str.charAt( pos + 1 );
+
+                lastColorPos = pos + 1;
+
+                result.append( ChatColor.getByChar( colorChar ).toString() );
+                result.append( checkForChatColor( str, pos + 2 ) );
+            }
+            return result.toString();
+        }
+
         public String getScrolled()
         {
-            String lastColors = "";
-
-            if ( position > 1 )
+            if ( lastColorPos <= position )
             {
-                final String previous = original.substring( 0, position );
-                lastColors = ChatColor.getLastColors( previous );
+                final String colors = checkForChatColor( original, position );
+
+                if ( !colors.isEmpty() && !this.lastColors.equals( colors ) )
+                {
+                    this.lastColors = colors;
+                }
             }
 
             int width = this.width;
-            if ( !lastColors.isEmpty() )
+            if ( !this.lastColors.isEmpty() )
             {
-                width -= lastColors.length();
+                width -= this.lastColors.length();
             }
+
             final int e = position + width;
 
-            return e > original.length()
-                    ? lastColors + original.substring( position ) + original.substring( 0, width - (original.length() - position) )
-                    : lastColors + original.substring( position, e );
+            String result;
+
+            if ( e > original.length() )
+            {
+                String extra = original.substring( 0, width - (original.length() - position) );
+
+                if (extra.charAt( extra.length() - 1 ) == ChatColor.COLOR_CHAR) {
+                    extra = extra.substring( 0, extra.length() - 1 );
+                }
+
+                result = original.substring( position ) + extra;
+            }
+            else
+            {
+                result = original.substring( position, e );
+            }
+
+            if ( result.charAt( 0 ) == ChatColor.COLOR_CHAR )
+            {
+                // if result starts with color char, we'll increment position to make sure next time we don't see the '4' of the '&4' color
+                position++;
+            }
+            return this.lastColors + result;
         }
 
         public int getWidth()

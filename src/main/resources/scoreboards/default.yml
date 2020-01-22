@@ -8,7 +8,7 @@ weight: 0
 # This will only impact servers that run a version older than 1.13
 # Possible modes are:
 # - SCOREBOARD_MAX_32 => this mode will allow for scoreboards UP TO 32 characters
-# - SCOREBOARD_MAX_48 => this mode will allow for scoreboards UP TO 48 characters, but can be buggy every 1/25 times when using fast animations
+# - SCOREBOARD_MAX_48 => this mode will allow for scoreboards UP TO 48 characters, but can be buggy every other time when using fast animations
 mode: 'SCOREBOARD_MAX_48'
 # What should the MINIMUM interval of the scoreboard be (in MILLISECONDS)?
 # Default is 50, which is the equivalent of one tick in minecraft.
