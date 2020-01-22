@@ -10,6 +10,7 @@ import com.dbsoftwares.spigot.scoreboard.packetwrappers.WrapperPlayServerScorebo
 import com.dbsoftwares.spigot.scoreboard.packetwrappers.WrapperPlayServerScoreboardTeam;
 import com.dbsoftwares.spigot.scoreboard.utils.PacketUtils;
 import com.dbsoftwares.spigot.scoreboard.utils.ServerVersion;
+import com.dbsoftwares.spigot.scoreboard.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -50,13 +51,10 @@ public class Scoreboard
     {
         this.player = player;
         this.configuration = scoreboardConfig.copy();
-        String scoreboardName = "HSB#" + player.getName();
-        if ( scoreboardName.length() > 16 )
-        {
-            scoreboardName = scoreboardName.substring( 0, 16 );
-        }
-        this.scoreboardName = scoreboardName;
-        this.executorService = THREAD_POOL == null ? Executors.newSingleThreadExecutor() : THREAD_POOL;
+        this.scoreboardName = Utils.optionalSubString( "HSB#" + player.getName(), 16 );
+        this.executorService = configuration.getInterval() > 0
+                ? (THREAD_POOL == null ? Executors.newSingleThreadExecutor() : THREAD_POOL)
+                : null;
     }
 
     public Player getPlayer()
@@ -66,7 +64,7 @@ public class Scoreboard
 
     private String getNextTitle()
     {
-        return configuration.getTitle().next( player );
+        return configuration.getTitle().next( this.player );
     }
 
     public void create()
@@ -96,22 +94,25 @@ public class Scoreboard
 
         HeroicScoreboard.getInstance().getScoreboards().add( this );
 
-        task = SCHEDULER.scheduleAtFixedRate(
-                () ->
-                {
-                    if ( HeroicScoreboard.getInstance().getConfiguration().getBoolean( "async.enabled" ) )
+        if ( configuration.getInterval() > 0 )
+        {
+            task = SCHEDULER.scheduleAtFixedRate(
+                    () ->
                     {
-                        executorService.execute( this::update );
-                    }
-                    else
-                    {
-                        Bukkit.getScheduler().runTask( HeroicScoreboard.getInstance(), this::update );
-                    }
-                },
-                50,
-                50,
-                TimeUnit.MILLISECONDS
-        );
+                        if ( HeroicScoreboard.getInstance().getConfiguration().getBoolean( "async.enabled" ) )
+                        {
+                            executorService.execute( this::update );
+                        }
+                        else
+                        {
+                            Bukkit.getScheduler().runTask( HeroicScoreboard.getInstance(), this::update );
+                        }
+                    },
+                    configuration.getInterval(),
+                    configuration.getInterval(),
+                    TimeUnit.MILLISECONDS
+            );
+        }
         created = true;
     }
 
@@ -163,9 +164,12 @@ public class Scoreboard
         {
             return;
         }
-        task.cancel( true );
+        if ( task != null )
+        {
+            task.cancel( true );
+        }
 
-        if ( THREAD_POOL == null )
+        if ( THREAD_POOL == null && executorService != null )
         {
             executorService.shutdown();
         }
@@ -189,6 +193,39 @@ public class Scoreboard
         created = false;
     }
 
+    private void removeLine( int line )
+    {
+        final VirtualTeam team = getOrCreateTeam( line );
+        final String old = team.getCurrentPlayer();
+
+        if ( old != null && created )
+        {
+            removeLine( old ).sendPacket( player );
+            team.removeTeam().sendPacket( player );
+        }
+
+        lines[line] = null;
+    }
+
+    private WrapperPlayServerScoreboardScore removeLine( final String old )
+    {
+        return PacketUtils.createScoreboardScorePacket( old, (byte) 1, this.scoreboardName, 0 );
+    }
+
+    private void setLine( int line, String value )
+    {
+        final VirtualTeam team = getOrCreateTeam( line );
+        final String old = team.getCurrentPlayer();
+
+        if ( old != null && created )
+        {
+            removeLine( old ).sendPacket( player );
+        }
+
+        team.setValue( value );
+        sendLine( line );
+    }
+
     private void sendLine( int line )
     {
         if ( line < 0 || line > 14 )
@@ -206,37 +243,11 @@ public class Scoreboard
         val.reset();
     }
 
-    private void removeLine( int line )
-    {
-        final VirtualTeam team = getOrCreateTeam( line );
-        final String old = team.getCurrentPlayer();
-
-        if ( old != null && created )
-        {
-            removeLine( old ).sendPacket( player );
-            team.removeTeam().sendPacket( player );
-        }
-
-        lines[line] = null;
-    }
-
-    private WrapperPlayServerScoreboardScore removeLine( final String old )
-    {
-        return PacketUtils.createScoreboardScorePacket( old, (byte) 1, this.scoreboardName, -1 );
-    }
-
-    private void setLine( int line, String value )
-    {
-        final VirtualTeam team = getOrCreateTeam( line );
-        team.setValue( value );
-        sendLine( line );
-    }
-
     private VirtualTeam getOrCreateTeam( int line )
     {
         if ( lines[line] == null )
         {
-            lines[line] = new VirtualTeam( line, ServerVersion.search(), "__fakeScore" + line );
+            lines[line] = new VirtualTeam( configuration.getMode(), line, ServerVersion.search(), "__fakeScore" + line );
         }
 
         return lines[line];

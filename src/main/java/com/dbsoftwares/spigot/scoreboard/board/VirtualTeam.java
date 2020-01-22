@@ -11,6 +11,10 @@ import java.util.List;
 public class VirtualTeam
 {
 
+    private static final String[] COLOR_LIST = { "§0§r", "§1§r", "§2§r", "§3§r", "§4§r",
+            "§5§r", "§6§r", "§7§r", "§8§r", "§9§r", "§a§r", "§b§r", "§c§r", "§d§r", "§e§r", "§f§r" };
+
+    private final ScoreboardMode mode;
     private final int line;
     private final ServerVersion version;
     private final String name;
@@ -22,8 +26,9 @@ public class VirtualTeam
     private boolean prefixChanged, suffixChanged, playerChanged = false;
     private boolean first = true;
 
-    private VirtualTeam( final int line, final ServerVersion version, final String name, final String prefix, final String suffix )
+    private VirtualTeam( final ScoreboardMode mode, final int line, final ServerVersion version, final String name, final String prefix, final String suffix )
     {
+        this.mode = mode;
         this.line = line;
         this.version = version;
         this.name = name;
@@ -31,9 +36,9 @@ public class VirtualTeam
         this.suffix = suffix;
     }
 
-    public VirtualTeam( final int line, final ServerVersion version, final String name )
+    public VirtualTeam( final ScoreboardMode mode, final int line, final ServerVersion version, final String name )
     {
-        this( line, version, name, "", "" );
+        this( mode, line, version, name, "", "" );
     }
 
     public String getName()
@@ -76,13 +81,13 @@ public class VirtualTeam
         return PacketUtils.createTeamPacket(
                 name,
                 (byte) mode,
-                /* newChat ? ComponentSerializer.toString( TextComponent.fromLegacyText( name ) ) : */ name,
+                name,
                 (byte) 0,
                 "never",
                 "always",
                 0,
-                /* newChat ? ComponentSerializer.toString( TextComponent.fromLegacyText( prefix ) ) : */ prefix,
-                /* newChat ? ComponentSerializer.toString( TextComponent.fromLegacyText( suffix ) ) : */ suffix,
+                prefix,
+                suffix,
                 new String[0]
         );
     }
@@ -175,7 +180,12 @@ public class VirtualTeam
 
     public void setValue( String value )
     {
-        final String[] splitten = ScoreboardUtils.splitString( line, value, version );
+        final String[] splitten = ScoreboardUtils.splitString( mode, value, version );
+
+        if ( splitten[1].isEmpty() )
+        {
+            splitten[1] = COLOR_LIST[line];
+        }
 
         setPrefix( splitten[0] );
         setPlayer( splitten[1] );
