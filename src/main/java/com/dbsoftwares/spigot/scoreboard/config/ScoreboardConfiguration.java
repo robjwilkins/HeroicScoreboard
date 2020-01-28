@@ -47,12 +47,14 @@ public class ScoreboardConfiguration
         {
             final AtomicBoolean result = new AtomicBoolean( true );
 
+            engine.put( "result", result );
             engine.eval( Utils.setPlaceHolders( player, checkScript ) );
 
             return result.get();
         }
         catch ( ScriptException e )
         {
+            e.printStackTrace();
             return true;
         }
     }
