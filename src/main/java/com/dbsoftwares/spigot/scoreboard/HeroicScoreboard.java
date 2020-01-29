@@ -100,7 +100,7 @@ public class HeroicScoreboard extends JavaPlugin
             final String permission = config.getString( "permission" );
             final String checkScript = config.getString( "check_script" );
             final int weight = config.getInteger( "weight" );
-            final ScoreboardMode mode = Utils.valueOfOr(config.getString( "mode" ), ScoreboardMode.SCOREBOARD_MAX_32);
+            final ScoreboardMode mode = Utils.valueOfOr( config.getString( "mode" ), ScoreboardMode.SCOREBOARD_MAX_32 );
             final int interval = config.getInteger( "interval" );
 
             final ScoreboardTitle title = new ScoreboardTitle(

@@ -6,14 +6,14 @@ permission: ''
 # In this script, we are checking if the rank === 'owner' or 'admin' using a PlaceholderAPI placeholder
 # This script is made using JavaScript and uses Java's Nashorn Engine
 check_script: |-
-    var rank = '%vault_rank%'.toLowerCase();
+  var rank = '%vault_rank%'.toLowerCase();
 
-    if (rank === 'owner' || rank === 'admin')
-    {
-        result.set(true);
-    } else {
-        result.set(false);
-    }
+  if (rank === 'owner' || rank === 'admin')
+  {
+      result.set(true);
+  } else {
+      result.set(false);
+  }
 weight: 10
 # This will only impact servers that run a version older than 1.13
 # Possible modes are:

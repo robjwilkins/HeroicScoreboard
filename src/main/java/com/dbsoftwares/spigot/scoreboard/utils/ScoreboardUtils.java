@@ -20,16 +20,29 @@ public class ScoreboardUtils
     }
 
 
-    public static String[] splitString( final ScoreboardMode mode, final String str, final ServerVersion version )
+    public static String[] splitString( final boolean oldScoreboard, final ScoreboardMode mode, final String str, final ServerVersion version )
     {
         final String[] splitten = new String[3];
         splitten[0] = "";
         splitten[1] = "";
         splitten[2] = "";
 
-        if ( version.isNewerThan( ServerVersion.MINECRAFT_1_13 ) )
+        if ( version.isNewerThan( ServerVersion.MINECRAFT_1_13 ) && !oldScoreboard )
         {
-            splitten[0] = str;
+            if ( str.length() < 16 )
+            {
+                splitten[0] = str;
+            }
+            else
+            {
+                final int middle = str.length() / 2;
+
+                final String prefix = str.substring( 0, middle );
+                final String lastColors = ChatColor.getLastColors( prefix );
+
+                splitten[0] = prefix;
+                splitten[2] = lastColors + str.substring( middle );
+            }
             return splitten;
         }
 
@@ -51,7 +64,8 @@ public class ScoreboardUtils
 
     // TODO: maybe merge splitShortLine & splitLongLine into one method and remove a bunch of redundant code (to other methods?)
 
-    private static String[] splitShortLine(final String str) {
+    private static String[] splitShortLine( final String str )
+    {
         final String[] splitten = new String[3];
 
         String prefix = str.substring( 0, 16 );

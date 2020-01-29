@@ -247,7 +247,7 @@ public class Scoreboard
     {
         if ( lines[line] == null )
         {
-            lines[line] = new VirtualTeam( configuration.getMode(), line, ServerVersion.search(), "__fakeScore" + line );
+            lines[line] = new VirtualTeam( Utils.requiresOldScoreboard( player ), configuration.getMode(), line, ServerVersion.search(), "__fakeScore" + line );
         }
 
         return lines[line];

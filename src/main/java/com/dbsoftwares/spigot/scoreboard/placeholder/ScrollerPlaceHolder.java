@@ -200,7 +200,8 @@ public class ScrollerPlaceHolder extends PlaceHolder
             {
                 String extra = original.substring( 0, width - (original.length() - position) );
 
-                if (extra.charAt( extra.length() - 1 ) == ChatColor.COLOR_CHAR) {
+                if ( extra.charAt( extra.length() - 1 ) == ChatColor.COLOR_CHAR )
+                {
                     extra = extra.substring( 0, extra.length() - 1 );
                 }
 

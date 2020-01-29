@@ -5,8 +5,27 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 public class Utils
 {
+
+    private static Method protocolVersionMethod = null;
+    private static Method getIdMethod = null;
+
+    static
+    {
+        try
+        {
+            protocolVersionMethod = Class.forName( "protocolsupport.api.ProtocolSupportAPI" ).getMethod( "getProtocolVersion", Player.class );
+            getIdMethod = Class.forName( "protocolsupport.api.ProtocolVersion" ).getMethod( "getId" );
+        }
+        catch ( Exception e )
+        {
+            // ProtocolSupport not installed.
+        }
+    }
 
     public static String getVersionName()
     {
@@ -85,6 +104,41 @@ public class Utils
         catch ( IllegalArgumentException e )
         {
             return def;
+        }
+    }
+
+    public static boolean requiresOldScoreboard( final Player player )
+    {
+        int version = -1;
+        if ( Bukkit.getPluginManager().isPluginEnabled( "ViaVersion" ) )
+        {
+            version = us.myles.ViaVersion.api.Via.getAPI().getPlayerVersion( player.getUniqueId() );
+        }
+        else if ( Bukkit.getPluginManager().isPluginEnabled( "ProtocolSupport" ) )
+        {
+            if ( protocolVersionMethod != null )
+            {
+                try
+                {
+                    Object ver = protocolVersionMethod.invoke( null, player );
+                    version = (int) getIdMethod.invoke( ver );
+                }
+                catch ( IllegalAccessException | InvocationTargetException e )
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        System.out.println( "player protocol version: " + version );
+
+        if ( version == -1 )
+        {
+            return ServerVersion.search().isOlderThan( ServerVersion.MINECRAFT_1_13 );
+        }
+        else
+        {
+            return version < 393;
         }
     }
 }
