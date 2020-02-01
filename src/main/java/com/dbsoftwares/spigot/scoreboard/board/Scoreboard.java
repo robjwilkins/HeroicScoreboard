@@ -217,12 +217,13 @@ public class Scoreboard
         final VirtualTeam team = getOrCreateTeam( line );
         final String old = team.getCurrentPlayer();
 
-        if ( old != null && created )
+        team.setValue( value );
+
+        if ( old != null && created && team.playerChanged && configuration.getMode() == ScoreboardMode.SCOREBOARD_MAX_48 )
         {
             removeLine( old ).sendPacket( player );
         }
 
-        team.setValue( value );
         sendLine( line );
     }
 

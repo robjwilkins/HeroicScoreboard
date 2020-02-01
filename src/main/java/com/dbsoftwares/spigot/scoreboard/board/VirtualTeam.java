@@ -20,12 +20,13 @@ public class VirtualTeam
     private final int line;
     private final ServerVersion version;
     private final String name;
+    public boolean playerChanged = false;
     private String prefix;
     private String suffix;
     private String currentPlayer;
     private String oldPlayer;
-
-    private boolean prefixChanged, suffixChanged, playerChanged = false;
+    private boolean prefixChanged;
+    private boolean suffixChanged;
     private boolean first = true;
 
     private VirtualTeam( final boolean oldScoreboard, final ScoreboardMode mode, final int line, final ServerVersion version, final String name, final String prefix, final String suffix )
@@ -154,11 +155,16 @@ public class VirtualTeam
                 packets.add( addOrRemovePlayer( 4, oldPlayer ) );
             }
             packets.add( changePlayer() );
-        }
 
-        if ( first )
-        {
-            first = false;
+            if ( first )
+            {
+                first = false;
+            }
+
+            if ( playerChanged )
+            {
+                playerChanged = false;
+            }
         }
 
         return packets;
@@ -199,6 +205,21 @@ public class VirtualTeam
         if ( splitten[1].isEmpty() )
         {
             splitten[1] = COLOR_LIST[line];
+        }
+
+        if ( splitten[0] == null )
+        {
+            splitten[0] = "";
+        }
+
+        if ( splitten[1] == null )
+        {
+            splitten[1] = "";
+        }
+
+        if ( splitten[2] == null )
+        {
+            splitten[2] = "";
         }
 
         setPrefix( splitten[0] );
