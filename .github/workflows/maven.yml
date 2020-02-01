@@ -17,11 +17,8 @@ jobs:
       run: mvn -B package --file pom.xml
     - id: getfilename
       run: echo "::set-output name=file::$(ls target/HeroicScoreboard*.jar)"
-    - uses: actions/upload-artifact@v1
-      with:
-        path: ${{ steps.getfilename.outputs.file }}
     - name: Create artifact
       uses: actions/upload-artifact@v1
       with:
-        name: HeroicSCoreboard.jar
-        path: target/HeroicScoreboard*.jar
+        name: HeroicScoreboard
+        path: ${{ steps.getfilename.outputs.file }}
