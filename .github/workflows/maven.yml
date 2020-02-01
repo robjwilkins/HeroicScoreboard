@@ -18,5 +18,5 @@ jobs:
     - name: Create artifact
       uses: actions/upload-artifact@v1
       with:
-        name: target
-        path: target
+        name: HeroicSCoreboard.jar
+        path: target/HeroicScoreboard*.jar
