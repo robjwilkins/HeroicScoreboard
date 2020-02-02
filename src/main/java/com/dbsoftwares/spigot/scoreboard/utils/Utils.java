@@ -130,8 +130,6 @@ public class Utils
             }
         }
 
-        System.out.println( "player protocol version: " + version );
-
         if ( version == -1 )
         {
             return ServerVersion.search().isOlderThan( ServerVersion.MINECRAFT_1_13 );
